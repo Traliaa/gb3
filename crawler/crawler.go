@@ -3,7 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/pkg/errors"
@@ -84,4 +88,21 @@ func (c *crawler) checkVisited(url string) bool {
 
 	_, ok := c.visited[url]
 	return ok
+}
+
+func (c *crawler) IncDepth() {
+	osSignalChan := make(chan os.Signal)
+
+	signal.Notify(osSignalChan,
+		syscall.SIGUSR1)
+
+	for {
+		select {
+		case sig := <-osSignalChan:
+			log.Printf("got signal %q", sig.String())
+			c.maxDepth = c.maxDepth + 2
+
+		}
+	}
+
 }

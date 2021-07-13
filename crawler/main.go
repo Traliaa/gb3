@@ -29,7 +29,7 @@ var (
 // Как вы помните, функция инициализации стартует первой
 func init() {
 	// задаём и парсим флаги
-	flag.StringVar(&url, "url", "", "url address")
+	flag.StringVar(&url, "url", "https://github.com/kilchik/gb", "url address")
 	flag.IntVar(&depthLimit, "depth", 3, "max depth for run")
 	flag.Parse()
 
@@ -43,8 +43,7 @@ func init() {
 
 func main() {
 	started := time.Now()
-
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	go watchSignals(cancel)
 	defer cancel()
 
@@ -58,6 +57,7 @@ func main() {
 
 	// запуск основной логики
 	// внутри есть рекурсивные запуски анализа в других горутинах
+	go crawler.IncDepth()
 	crawler.run(ctx, url, results, 0)
 
 	// ждём завершения работы чтения в своей горутине
